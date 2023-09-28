@@ -2,12 +2,11 @@ import UploadImage from "@/UploadImage";
 import React, { useState } from "react";
 import { Web3Storage } from "web3.storage";
 const client = new Web3Storage({ token: process.env.NEXT_PUBLIC_API_KEY });
-import { Cloudinary, Upl } from "@cloudinary/url-gen";
 
 const createNFT = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [tokenURI, setTokenURI] = useState("");
+  const [tokenUri, setTokenUri] = useState("");
   const [image, setImage] = useState(null);
 
   const handleNameChange = (e) => {
@@ -52,7 +51,7 @@ const createNFT = () => {
       const uri = `https://dweb.link/ipfs/${cid}`;
 
       console.log(uri);
-      setTokenURI(cid);
+      setTokenUri(cid);
       return cid;
     } else {
       console.log("Error...");
@@ -116,19 +115,19 @@ const createNFT = () => {
                   />
                 </div>
 
-                {tokenURI && (
+                {tokenUri && (
                   <div>
                     <label
-                      htmlFor="tokenURI"
+                      htmlFor="tokenUri"
                       className="block text-gray-700 text-sm font-bold mb-2"
                     >
                       Token URI
                     </label>
                     <input
                       type="text"
-                      id="tokenURI"
-                      name="tokenURI"
-                      value={tokenURI}
+                      id="tokenUri"
+                      name="tokenUri"
+                      value={tokenUri}
                       className="shadow appearance-none border rounded w-full mb-2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                       readOnly
                     />
@@ -140,7 +139,7 @@ const createNFT = () => {
                     onClick={() => generateURI()}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-4"
                   >
-                    {tokenURI ? "Mint NFT" : "Generate URI"}
+                    {tokenUri ? "Mint NFT" : "Generate URI"}
                   </button>
                 </div>
               </form>
