@@ -5,7 +5,6 @@ const client = new Web3Storage({ token: process.env.NEXT_PUBLIC_API_KEY });
 import { Cloudinary, Upl } from "@cloudinary/url-gen";
 
 const createNFT = () => {
-  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [tokenURI, setTokenURI] = useState("");
