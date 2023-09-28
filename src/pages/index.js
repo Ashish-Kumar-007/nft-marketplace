@@ -1,15 +1,48 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+import Image from "next/image";
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
 
-const inter = Inter({ subsets: ['latin'] })
-
+const nfts = [
+  {
+    id: 1,
+    name: "NFT 1",
+    imageUrl: "/nft1.jpg",
+    price: "1 ETH",
+  },
+  {
+    id: 2,
+    name: "NFT 2",
+    imageUrl: "/nft2.jpg",
+    price: "0.5 ETH",
+  },
+];
 export default function Home() {
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <ConnectButton />
+    <main>
+      <div className="container mx-auto py-12 h-screen">
+        <h2 className="text-2xl font-semibold mb-4 text-center text-blue-600">
+          Available NFTs for Purchase
+        </h2>
+        <div className="grid grid-cols-3 gap-4">
+          {nfts.map((nft) => (
+            <div key={nft.id} className="bg-white shadow-md rounded-lg p-4">
+              <img
+                src={nft.imageUrl}
+                alt={nft.name}
+                className="w-full h-auto rounded-lg"
+              />
+              <h3 className="text-lg font-semibold mt-2">{nft.name}</h3>
+              <p className="text-gray-600 mt-1">Price: {nft.price}</p>
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2"
+                onClick={() => handleBuyClick(nft.id)} // Add a function to handle the buy button click event
+              >
+                Buy
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
     </main>
-  )
+  );
 }
