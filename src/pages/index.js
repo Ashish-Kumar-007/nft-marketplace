@@ -26,15 +26,17 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-4">
           {nfts.map((nft) => (
             <div key={nft.id} className="bg-white shadow-md rounded-lg p-4">
-              <img
+              <Image
                 src={nft.imageUrl}
                 alt={nft.name}
+                width={10}
+                height={10}
                 className="w-full h-auto rounded-lg"
               />
               <h3 className="text-lg font-semibold mt-2">{nft.name}</h3>
               <p className="text-gray-600 mt-1">Price: {nft.price}</p>
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2"
+                className="bg-blue-500 w-full hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2"
                 onClick={() => handleBuyClick(nft.id)} // Add a function to handle the buy button click event
               >
                 Buy
