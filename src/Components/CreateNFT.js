@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Web3Storage } from "web3.storage";
 const client = new Web3Storage({ token: process.env.NEXT_PUBLIC_API_KEY });
 
-const createNFT = () => {
+const CreateNFT = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [tokenUri, setTokenUri] = useState("");
@@ -151,4 +151,4 @@ const createNFT = () => {
   );
 };
 
-export default createNFT;
+export default CreateNFT;
