@@ -87,7 +87,7 @@ export default function Home() {
         toast.success("NFT Purchased Successfully!...");
         return;
       }
-      if (response == account.address) {
+      if (!response) {
         toast.error("Can't buy own NFT!");
         return;
       }
@@ -113,51 +113,44 @@ export default function Home() {
           Available NFTs for Purchase
         </h2>
         <div className="grid grid-cols-3 gap-4">
-          {loading ? (
+        {loading ? (
             "Loading..."
-          ) : nfts ? (
-            nfts?.map(
-              (
-                nft,
-                index // Added 'index' parameter to map
-              ) => (
-                <div key={nft.id} className="bg-white shadow-md rounded-lg p-4">
-                  <Image
-                    src={nft.imageUrl}
-                    alt={nft.name}
-                    width={150}
-                    height={150}
-                    className="w-full h-auto rounded-lg"
-                  />
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold mt-2">{nft.name}</h3>
-                    <p className="text-gray-600 mt-1">
-                      #{nft.tokenData.tokenId.toString()}
-                    </p>
-                  </div>
-
+          ) : nfts && nfts.length > 0 ? (
+            nfts.map((nft, index) => (
+              <div key={nft.id} className="bg-white shadow-md rounded-lg p-4">
+                <Image
+                  src={nft.imageUrl}
+                  alt={nft.name}
+                  width={150}
+                  height={150}
+                  className="w-full h-auto rounded-lg"
+                />
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold mt-2">{nft.name}</h3>
                   <p className="text-gray-600 mt-1">
-                    Price:{" "}
-                    {ethers.utils.formatEther(nft.tokenData.price.toString())}
+                    #{nft.tokenData.tokenId.toString()}
                   </p>
-                  <button
-                    className="flex justify-center items-center bg-blue-500 w-full hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2"
-                    onClick={(e) => handleBuyClick(e, nft.tokenData, index)} // Pass 'index' to handleBuyClick
-                    disabled={nftLoading[index]} // Use 'nftLoading' for the 'disabled' attribute
-                  >
-                    {nftLoading[index] ? (
-                      <ThreeDots height="30" width="30" color="#f3f4f6" />
-                    ) : (
-                      "Buy"
-                    )}
-                  </button>
                 </div>
-              )
-            )
+
+                <p className="text-gray-600 mt-1">
+                  Price:{" "}
+                  {ethers.utils.formatEther(nft.tokenData.price.toString())}
+                </p>
+                <button
+                  className="flex justify-center items-center bg-blue-500 w-full hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2"
+                  onClick={(e) => handleBuyClick(e, nft.tokenData, index)}
+                  disabled={nftLoading[index]}
+                >
+                  {nftLoading[index] ? (
+                    <ThreeDots height="30" width="30" color="#f3f4f6" />
+                  ) : (
+                    "Buy"
+                  )}
+                </button>
+              </div>
+            ))
           ) : (
-            <>
-              <p className="text-gray-600 mt-1">No NFTs available for sale!</p>
-            </>
+            <p className="text-gray-600 mt-1">No NFTs available for sale!</p>
           )}
         </div>
       </div>
