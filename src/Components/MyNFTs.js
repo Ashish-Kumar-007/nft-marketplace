@@ -2,16 +2,19 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { ethers } from "ethers";
+import toast from "react-hot-toast";
 const interact = require("../Utils/Interact");
+import { ThreeDots } from "react-loader-spinner";
 
 const MyNFTs = () => {
   // You can fetch your minted and listed NFTs data here
   const { address } = useAccount();
   const [mintedNFTs, setMintedNFTs] = useState(null);
   const [listedNFTs, setListedNFTs] = useState(null);
-  const [boughtNFTs, setBoughtNFTs] = useState(null)
+  const [boughtNFTs, setBoughtNFTs] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsloading] = useState(false);
   const [selectedTokenID, setSelectedTokenID] = useState(null);
   const [price, setPrice] = useState(0);
   const [signer, setSigner] = useState(null);
@@ -60,7 +63,7 @@ const MyNFTs = () => {
         const boughtFTsResponse = await interact.getNFTsBoughtByUser(address);
         setMintedNFTs(mintedNFTsResponse);
         setListedNFTs(listedNFTsResponse);
-        setBoughtNFTs(boughtFTsResponse)
+        setBoughtNFTs(boughtFTsResponse);
         console.log(mintedNFTsResponse, listedNFTsResponse);
       } catch (error) {
         console.error("Error fetching minted NFTs:", error);
@@ -74,23 +77,29 @@ const MyNFTs = () => {
 
   const listForSale = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true before starting the request
+    setIsloading(true); // Set loading to true before starting the request
 
     try {
       const response = await interact.listNFT(signer, selectedTokenID, price);
       console.log(response);
+      if (response) {
+        toast.success("NFT Listed For Sale!...");
+        window.location.reload();
+      }
       setListedNFTs(response);
     } catch (error) {
       console.error("Error fetching price:", error);
     } finally {
-      setLoading(false); // Set loading to false after the request, whether it succeeds or fails
+      setIsloading(false); // Set loading to false after the request, whether it succeeds or fails
     }
   };
 
   return (
     <div
       className={
-        loading ? "container mx-auto py-12 h-screen" : "container mx-auto py-12 h-screen"
+        loading
+          ? "container mx-auto py-12 h-screen"
+          : "container mx-auto py-12 h-screen"
       }
     >
       <h2 className="text-3xl font-semibold mb-4 text-blue-600">NFTs Minted</h2>
@@ -153,15 +162,20 @@ const MyNFTs = () => {
                           }}
                         />
                       </div>
-                      <div className="modal-footer w-full mt-4">
+                      <div className="flex modal-footer w-full mt-4">
                         <button
                           onClick={(e) => {
                             e.preventDefault(); // Prevent form submission
                             listForSale(e);
                           }}
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                          className="flex justify-center w-full items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                          disabled={isLoading}
                         >
-                          Add to Sale
+                          {isLoading ? (
+                            <ThreeDots height="30" width="30" color="#f3f4f6" />
+                          ) : (
+                            "Add to Sale"
+                          )}
                         </button>
                         <button
                           onClick={() => handleOpenModal()} // Close the modal for this NFT

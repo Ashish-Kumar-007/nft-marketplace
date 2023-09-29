@@ -76,7 +76,7 @@ contract NFTMarketplace is ReentrancyGuard {
         uint256 price
     ) external nonReentrant {
         require(
-            IERC721(nftContract).ownerOf(tokenId) == msg.sender,
+            nftContract.ownerOf(tokenId) == msg.sender,
             "You can only list your own NFTs"
         );
         require(price > 0, "Price must be greater than zero");
@@ -100,9 +100,10 @@ contract NFTMarketplace is ReentrancyGuard {
         NFTListing memory listing = nftListings[tokenId];
         require(listing.isForSale, "NFT is not for sale");
         require(msg.value >= listing.price, "Insufficient Ether sent");
-
+        
         address seller = listing.owner;
-
+        require(seller == msg.sender, "Can't But Own NFT!");
+        
         tokensListed.decrement();
 
         // Transfer the NFT to the buyer

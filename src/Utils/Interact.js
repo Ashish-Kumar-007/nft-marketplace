@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import toast from "react-hot-toast";
 
 const marketContractData = require("../../Contracts/artifacts/Marketplace.json");
 const nftContractData = require("../../Contracts/artifacts/NFT.json");
@@ -72,7 +73,10 @@ async function mintNFT(signer, name, tokenUri) {
     const transaction = await contract.connect(signer).mintNFT(name, tokenUri, {
       gasLimit: gasLimit,
     });
-    console.log(transaction);
+    // Wait for the transaction to be mined
+    const receipt = await transaction.wait();
+    return receipt;
+    console.log(receipt);
   } catch (error) {
     console.error("Error in mintNFT:", error);
     // Additional error handling logic can be added here
@@ -98,27 +102,35 @@ async function listNFT(signer, tokenId, price) {
       .listNFTForSale(tokenId, newPriceInWei);
 
     // Wait for the listing transaction to be mined
-    await listTransaction.wait();
-
-    // Transaction was successful, handle the result as needed
+    const receipt = await listTransaction.wait();
     console.log("NFT listed successfully!");
+    return receipt;
+    // Transaction was successful, handle the result as needed
   } catch (error) {
     console.error("Error in listNFT:", error);
     // Additional error handling logic can be added here
   }
 }
 
-async function purchaseNFT(signer, tokenId) {
+async function purchaseNFT(address, signer, tokenId) {
   try {
-    console.log(tokenId.toString());
+    console.log(tokenId.toString(), signer);
     const tokenData = await contract.nftListings(tokenId);
+    if(tokenData.owner == address){
+      return tokenData.owner;
+    }
     const price = tokenData.price.toString();
     console.log(tokenData.price.toString());
 
-    await contract.connect(signer).purchaseNFT(tokenId, {
+    const transaction = await contract.connect(signer).purchaseNFT(tokenId, {
       value: price,
     });
-  } catch (error) {}
+    const receipt = await transaction.wait();
+    console.log(receipt);
+    return receipt;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function getOwnedListedNFTs(address) {

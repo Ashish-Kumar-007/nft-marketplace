@@ -5,6 +5,8 @@ const client = new Web3Storage({ token: process.env.NEXT_PUBLIC_API_KEY });
 import { useAccount } from "wagmi";
 import { ThreeDots } from "react-loader-spinner";
 import { ethers } from "ethers";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
 const interact = require("../Utils/Interact");
 
 const CreateNFT = () => {
@@ -15,6 +17,7 @@ const CreateNFT = () => {
   const [loading, setLoading] = useState(false);
   const [signer, setSigner] = useState(null);
   const { address } = useAccount();
+  const router = useRouter();
 
   useEffect(() => {
     async function setupWeb3() {
@@ -62,8 +65,13 @@ const CreateNFT = () => {
     setLoading(true);
     try {
       const response = await interact.mintNFT(signer, name, tokenUri);
+      if (response) {
+        toast.success("NFT Minted!");
+        router.push("/mynfts")
+      }
       console.log(response);
     } catch (error) {
+      toast.error("Error in Minting NFT!");
       console.error(error);
     } finally {
       setLoading(false);
@@ -73,9 +81,11 @@ const CreateNFT = () => {
   const generateURI = async () => {
     try {
       setLoading(true);
-
+      if (!name || !description || !image) {
+        toast.error("Fill all the fields!...");
+        return;
+      }
       const imageUrl = await UploadImage(image);
-
       if (imageUrl) {
         const nftMetadata = {
           name: name,
@@ -91,13 +101,18 @@ const CreateNFT = () => {
         const uri = `https://dweb.link/ipfs/${cid}`;
 
         console.log(uri);
+        if (uri) {
+          toast.success("Token URI Generated!");
+        }
         setTokenUri(cid);
         return cid;
       } else {
         console.error("Error uploading image");
+        toast.error("Error uploading image");
       }
     } catch (error) {
       console.error("Error generating URI:", error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }

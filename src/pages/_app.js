@@ -11,6 +11,7 @@ import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 import Layout from "@/Components/Layout";
 import { useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
 const { chains, publicClient } = configureChains(
   [polygonMumbai],
   [alchemyProvider({ apiKey: process.env.ALCHEMY_ID }), publicProvider()]
@@ -49,6 +50,7 @@ export default function App({ Component, pageProps }) {
           >
             <Layout>
               <Component {...pageProps} />
+              <Toaster position="top-right" reverseOrder={false} />
             </Layout>
           </RainbowKitProvider>
         </WagmiConfig>
