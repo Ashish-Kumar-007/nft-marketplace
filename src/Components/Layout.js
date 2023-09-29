@@ -2,9 +2,9 @@ import Header from './Header';
 
 function Layout({ children }) {
   return (
-    <div className="bg-gray-100">
+    <div>
       <Header />
-      <main className="container mx-auto p-4">{children}</main>
+      <main className="container mx-auto p-4 mb-5">{children}</main>
     </div>
   );
 }

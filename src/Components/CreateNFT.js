@@ -1,13 +1,49 @@
 import UploadImage from "@/UploadImage";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Web3Storage } from "web3.storage";
 const client = new Web3Storage({ token: process.env.NEXT_PUBLIC_API_KEY });
+import { useAccount } from "wagmi";
+import { ThreeDots } from "react-loader-spinner";
+import { ethers } from "ethers";
+const interact = require("../Utils/Interact");
 
 const CreateNFT = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [tokenUri, setTokenUri] = useState("");
   const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [signer, setSigner] = useState(null);
+  const { address } = useAccount();
+
+  useEffect(() => {
+    async function setupWeb3() {
+      if (typeof window.ethereum !== "undefined") {
+        // Connect to MetaMask's Ethereum provider
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+        try {
+          // Request account access
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+
+          // Get the signer (user's Ethereum account)
+          const signer = provider.getSigner();
+
+          // Set the provider and signer to your state or wherever needed
+          // setProvider(provider);
+          setSigner(signer);
+
+          console.log("Web3 initialized successfully.");
+        } catch (error) {
+          console.error("Error requesting account access:", error);
+        }
+      } else {
+        console.warn("MetaMask not detected");
+      }
+    }
+
+    setupWeb3();
+  }, []);
 
   const handleNameChange = (e) => {
     setName(e.target.value);
@@ -22,39 +58,48 @@ const CreateNFT = () => {
     setImage(selectedImage);
   };
 
-  const MintNFT= (e) => {
-    e.preventDefault();
+  const mintNFT = async () => {
+    setLoading(true);
+    try {
+      const response = await interact.mintNFT(signer, name, tokenUri);
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const generateURI = async () => {
-    let imageUrl;
-    await UploadImage(image)
-      .then((response) => {
-        imageUrl = response;
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    try {
+      setLoading(true);
 
-    if (imageUrl) {
-      const nftMetadata = {
-        name: name,
-        description: description,
-        imageUrl: imageUrl,
-      };
-      const jsonString = JSON.stringify(nftMetadata);
-      const file = new File([jsonString], "nftMetadata.json", {
-        type: "application/json",
-      });
+      const imageUrl = await UploadImage(image);
 
-      const cid = await client.put([file]);
-      const uri = `https://dweb.link/ipfs/${cid}`;
+      if (imageUrl) {
+        const nftMetadata = {
+          name: name,
+          description: description,
+          imageUrl: imageUrl,
+        };
+        const jsonString = JSON.stringify(nftMetadata);
+        const file = new File([jsonString], "nftMetadata.json", {
+          type: "application/json",
+        });
 
-      console.log(uri);
-      setTokenUri(cid);
-      return cid;
-    } else {
-      console.log("Error...");
+        const cid = await client.put([file]);
+        const uri = `https://dweb.link/ipfs/${cid}`;
+
+        console.log(uri);
+        setTokenUri(cid);
+        return cid;
+      } else {
+        console.error("Error uploading image");
+      }
+    } catch (error) {
+      console.error("Error generating URI:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,86 +110,100 @@ const CreateNFT = () => {
           <h1 className="text-2xl font-semibold mb-4 text-center text-blue-600">
             Mint NFT
           </h1>
-            <div>
-              <form>
-                <div className="mb-4">
+          <div>
+            <form>
+              <div className="mb-4">
+                <label
+                  htmlFor="name"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={name}
+                  onChange={handleNameChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="description"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={description}
+                  onChange={handleDescriptionChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32"
+                  required
+                ></textarea>
+                <label
+                  htmlFor="image"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Image
+                </label>
+                <input
+                  type="file"
+                  id="image"
+                  name="image"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
+              </div>
+
+              {tokenUri && (
+                <div>
                   <label
-                    htmlFor="name"
+                    htmlFor="tokenUri"
                     className="block text-gray-700 text-sm font-bold mb-2"
                   >
-                    Name
+                    Token URI
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    value={name}
-                    onChange={handleNameChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
+                    id="tokenUri"
+                    name="tokenUri"
+                    value={tokenUri}
+                    className="shadow appearance-none border rounded w-full mb-2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    readOnly
                   />
                 </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="description"
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Description
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={description}
-                    onChange={handleDescriptionChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32"
-                    required
-                  ></textarea>
-                  <label
-                    htmlFor="image"
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Image
-                  </label>
-                  <input
-                    type="file"
-                    id="image"
-                    name="image"
-                    onChange={handleImageChange}
-                    accept="image/*"
-                    className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  />
-                </div>
-
-                {tokenUri && (
-                  <div>
-                    <label
-                      htmlFor="tokenUri"
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                    >
-                      Token URI
-                    </label>
-                    <input
-                      type="text"
-                      id="tokenUri"
-                      name="tokenUri"
-                      value={tokenUri}
-                      className="shadow appearance-none border rounded w-full mb-2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      readOnly
-                    />
-                  </div>
-                )}
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => generateURI()}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-4"
-                  >
-                    {tokenUri ? "Mint NFT" : "Generate URI"}
-                  </button>
-                </div>
-              </form>
-            </div>
-
+              )}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (tokenUri) {
+                      // Call one function when tokenUri is true
+                      mintNFT();
+                    } else {
+                      // Call another function when tokenUri is false
+                      generateURI();
+                    }
+                  }}
+                  className="flex justify-center w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-4" // Added 'relative' class
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ThreeDots height="30" width="30" color="#f3f4f6" />
+                  ) : tokenUri ? (
+                    "Mint NFT"
+                  ) : (
+                    "Generate URI"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
