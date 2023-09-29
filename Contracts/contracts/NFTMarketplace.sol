@@ -102,8 +102,8 @@ contract NFTMarketplace is ReentrancyGuard {
         require(msg.value >= listing.price, "Insufficient Ether sent");
         
         address seller = listing.owner;
-        require(seller == msg.sender, "Can't But Own NFT!");
-        
+        require(seller != msg.sender, "Can't Buy Own NFT!");
+
         tokensListed.decrement();
 
         // Transfer the NFT to the buyer
